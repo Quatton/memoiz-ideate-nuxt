@@ -14,7 +14,7 @@ module.exports = {
   parserOptions: {
     parser: "@typescript-eslint/parser",
   },
-  plugins: [],
+  plugins: ["vitest"],
   rules: {
     // "vue/multi-word-component-names": "off",
     // "vue/no-multiple-template-root": "off",
