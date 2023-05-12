@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Inter";
+    --font-mono: "JetBrains Mono";
+    --font-display: "Montserrat";
+  }
+}

@@ -19,6 +19,7 @@ module.exports = {
   plugins: ["vitest", "prettier"],
   rules: {
     "vue/multi-word-component-names": "off",
+    "tailwindcss/no-custom-classname": "off",
     // "vue/no-multiple-template-root": "off",
     // "@typescript-eslint/no-unused-vars": "off",
   },

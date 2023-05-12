@@ -1,7 +1,9 @@
 <script lang="ts" setup></script>
 
 <template>
-  <TextEditor />
+  <section class="flex h-screen items-center justify-center">
+    <TextEditor />
+  </section>
 </template>
 
 <style scoped></style>
