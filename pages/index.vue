@@ -1,7 +1,7 @@
 <script lang="ts" setup></script>
 
 <template>
-  <section class="flex h-screen items-center justify-center">
+  <section class="flex grow items-center justify-center">
     <TextEditor />
   </section>
 </template>

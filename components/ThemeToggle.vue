@@ -7,7 +7,10 @@ const toggleColorMode = () => {
 </script>
 
 <template>
-  <button class="hover:[&>*]:rotate-12 transition-colors inline-flex items-center justify-center" v-on:click="() => toggleColorMode()">
+  <button
+    class="inline-flex items-center justify-center transition-colors hover:[&>*]:rotate-12"
+    @click="() => toggleColorMode()"
+  >
     <Icon
       size="20"
       name="bx-moon"

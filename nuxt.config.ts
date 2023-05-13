@@ -7,9 +7,11 @@ export default defineNuxtConfig({
     "@nuxtjs/google-fonts",
     "nuxt-icon",
   ],
+
   colorMode: {
     classSuffix: "",
   },
+
   googleFonts: {
     families: {
       Inter: true,
@@ -17,4 +19,8 @@ export default defineNuxtConfig({
       Montserrat: true,
     },
   },
+
+  devtools: {
+    enabled: true
+  }
 });
