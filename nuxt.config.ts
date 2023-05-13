@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@nuxtjs/google-fonts",
     "nuxt-icon",
+    "nuxt-monaco-editor",
   ],
 
   colorMode: {
@@ -21,6 +22,6 @@ export default defineNuxtConfig({
   },
 
   devtools: {
-    enabled: true
-  }
+    enabled: true,
+  },
 });

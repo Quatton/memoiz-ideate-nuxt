@@ -2,7 +2,9 @@
 
 <template>
   <section class="flex grow items-center justify-center">
-    <TextEditor />
+    <ClientOnly>
+      <EditorScreen />
+    </ClientOnly>
   </section>
 </template>
 

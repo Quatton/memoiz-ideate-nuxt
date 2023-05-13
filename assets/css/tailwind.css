@@ -8,4 +8,8 @@
     --font-mono: "JetBrains Mono";
     --font-display: "Montserrat";
   }
+
+  * {
+    @apply box-border transition-colors;
+  }
 }
