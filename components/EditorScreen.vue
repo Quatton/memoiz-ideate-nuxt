@@ -1,21 +1,22 @@
 <script lang="ts" setup>
-import * as monaco from "monaco-editor";
+// import * as monaco from "monaco-editor";
+// import mermaid from "mermaid";
 
 const colorMode = useColorMode();
 
-const options = computed(() => {
-  const options: monaco.editor.IStandaloneEditorConstructionOptions = {
-    theme: colorMode.value === "dark" ? "mermaid-dark" : "mermaid",
-    minimap: {
-      enabled: false,
-    },
-    overviewRulerLanes: 0,
-    autoClosingQuotes: "beforeWhitespace",
-    autoClosingBrackets: "beforeWhitespace",
-    automaticLayout: true,
-  };
-  return options;
-});
+// const options = computed(() => {
+//   const options: monaco.editor.IStandaloneEditorConstructionOptions = {
+//     theme: colorMode.value === "dark" ? "mermaid-dark" : "mermaid",
+//     minimap: {
+//       enabled: false,
+//     },
+//     overviewRulerLanes: 0,
+//     autoClosingQuotes: "beforeWhitespace",
+//     autoClosingBrackets: "beforeWhitespace",
+//     automaticLayout: true,
+//   };
+//   return options;
+// });
 const pre = ref(`flowchart TD
     Start --> Stop`);
 
@@ -23,12 +24,13 @@ const {
   data: svg,
   error,
   pending,
-} = await useLazyAsyncData(
+} = await useAsyncData(
   "mermaid",
   async () => {
     const { svg } = await render(
       {
         theme: colorMode.value === "dark" ? "dark" : "default",
+        securityLevel: "antiscript",
       },
       pre.value,
       "mermaid"
@@ -40,14 +42,57 @@ const {
   }
 );
 
-onMounted(() => {
-  initEditor(monaco);
-});
+watch(
+  [svg, error, pending],
+  () => {
+    if (svg.value && !error.value && !pending.value) {
+      const nodes = document.querySelector("g.nodes");
+
+      if (!nodes) return;
+      for (const node of nodes.children) {
+        const nodeId = node.id.match(/^flowchart-(\w+)-\d+$/)?.at(1);
+        node.addEventListener("click", () => {
+          const newEdge = `\n\t${nodeId} -->|"🤖"| node${Math.floor(
+            Math.random() * 100000
+          )}("✏️")`;
+
+          pre.value += newEdge;
+        });
+        node.addEventListener("contextmenu", (event) => {
+          event.preventDefault(); // Prevent the default right-click action
+          const matchingGroup = pre.value.match(
+            new RegExp(`${nodeId}\\(".+"\\)|${nodeId}`)
+          ); // Find the matching group
+          if (!matchingGroup) return;
+          const userInput = window.prompt(
+            "Enter new value:",
+            matchingGroup.at(1) || ""
+          ); // Prompt the user for input
+          // ^?
+          if (userInput) {
+            pre.value = pre.value.replace(
+              matchingGroup.at(0),
+              `${nodeId}("${userInput}")`
+            ); // Replace the matching group with the user input
+          }
+        });
+        node.classList.add("cursor-pointer");
+      }
+    }
+  },
+  {
+    flush: "post",
+  }
+);
+
+// onMounted(() => {
+//   initEditor(monaco);
+// });
 </script>
 
 <template>
   <div class="flex h-full grow">
-    <div
+    <!-- <div
       :class="
         cn([
           'flex flex-col overflow-hidden border-r font-mono',
@@ -76,7 +121,7 @@ onMounted(() => {
       >
         idk i love making multiple windows
       </div>
-    </div>
+    </div> -->
 
     <div
       :class="
