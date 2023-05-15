@@ -24,4 +24,8 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
   },
+
+  runtimeConfig: {
+    ai21ApiKey: "",
+  },
 });

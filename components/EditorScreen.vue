@@ -17,8 +17,10 @@ const colorMode = useColorMode();
 //   };
 //   return options;
 // });
-const pre = ref(`flowchart TD
-    Start --> Stop`);
+const pre = ref(`
+flowchart TD
+  tutorial("Right-click the next node to define a problem.\nLeft-click to generate the next node.\nRight-click the edge to edit.\nLeft-click the edge to generate a question.") --> start("I want to book a hotel")
+`);
 
 const {
   data: svg,
@@ -32,7 +34,7 @@ const {
         theme: colorMode.value === "dark" ? "dark" : "default",
         securityLevel: "antiscript",
       },
-      pre.value,
+      pre.value.trim(),
       "mermaid"
     );
     return svg;
@@ -48,36 +50,98 @@ watch(
     if (svg.value && !error.value && !pending.value) {
       const nodes = document.querySelector("g.nodes");
 
-      if (!nodes) return;
-      for (const node of nodes.children) {
-        const nodeId = node.id.match(/^flowchart-(\w+)-\d+$/)?.at(1);
-        node.addEventListener("click", () => {
-          const newEdge = `\n\t${nodeId} -->|"🤖"| node${Math.floor(
-            Math.random() * 100000
-          )}("✏️")`;
+      (() => {
+        if (!nodes) return;
+        for (const node of nodes.children) {
+          const nodeId = node.id.match(/^flowchart-(\w+)-\d+$/)?.at(1);
 
-          pre.value += newEdge;
-        });
-        node.addEventListener("contextmenu", (event) => {
-          event.preventDefault(); // Prevent the default right-click action
-          const matchingGroup = pre.value.match(
-            new RegExp(`${nodeId}\\(".+"\\)|${nodeId}`)
-          ); // Find the matching group
-          if (!matchingGroup) return;
-          const userInput = window.prompt(
-            "Enter new value:",
-            matchingGroup.at(1) || ""
-          ); // Prompt the user for input
-          // ^?
-          if (userInput) {
+          const nodeLabel = new RegExp(`${nodeId}\\(".+"\\)|${nodeId}`);
+          const matchingGroup = pre.value.match(nodeLabel); // Find the matching group
+          if (!nodeId) continue;
+          node.addEventListener("click", async () => {
+            const { edge: label } = await $fetch("/api/new-edge", {
+              body: {
+                code: pre.value,
+              },
+              method: "POST",
+            });
+
+            const newEdge = `\n\t${nodeId} -->|"${label}"| node${Math.floor(
+              Math.random() * 100000
+            )}("✏️")`;
+
+            pre.value += newEdge;
+          });
+          node.addEventListener("contextmenu", (event) => {
+            event.preventDefault(); // Prevent the default right-click action
+            if (!matchingGroup) return;
+            const userInput = window.prompt(
+              "Enter new value:",
+              matchingGroup.at(1) || ""
+            ); // Prompt the user for input
+
+            if (userInput) {
+              const sanitizedUserInput = userInput.replace(/"/g, "'");
+
+              pre.value = pre.value.replace(
+                nodeLabel,
+                `${nodeId}("${sanitizedUserInput}")`
+              ); // Replace the matching group with the user input
+            }
+          });
+          node.classList.add("cursor-pointer");
+        }
+      })();
+
+      const edgeLabels = document.querySelector("g.edgeLabels");
+      const edgePaths = document.querySelector("g.edgePaths");
+
+      (() => {
+        if (!edgeLabels || !edgePaths) return;
+        for (let i = 0; i < edgeLabels.children.length; i++) {
+          const edgeLabel = edgeLabels.children.item(i);
+          const edgePath = edgePaths.children.item(i);
+          if (!edgeLabel || !edgePath) continue;
+          const edgeId = edgePath.id.match(/^L-(.+)-(.+)-\d*$/);
+
+          if (!edgeId || edgeId.length < 3) continue;
+
+          const edgeStart = edgeId.at(1);
+          const edgeEnd = edgeId.at(2);
+
+          // refer to this ^(?:node1)(?:\("[^"]*"\))?\s-->(?:\|"([^"]+)"\|)?\s(?:node2)(?:\("[^"]*"\))?$
+          const edgeDefinitionRegExp = new RegExp(
+            `((?:${edgeStart})(?:\\("[^"]*"\\))?)\\s-->(?:\\|"([^"]+)"\\|)?\\s((?:${edgeEnd})(?:\\("[^"]*"\\))?)`
+          );
+
+          const edgeDefinition = pre.value.match(edgeDefinitionRegExp);
+
+          if (!edgeDefinition) continue;
+          const [_, nodeStart, edge, nodeEnd] = edgeDefinition;
+
+          if (!nodeStart || !edge || !nodeEnd) continue;
+
+          edgeLabel.addEventListener("click", async () => {
+            const { edge: newEdge } = await $fetch("/api/new-edge", {
+              body: {
+                // replace $2 with 🤖
+                code: pre.value.replace(
+                  edgeDefinitionRegExp,
+                  `${nodeStart} -->|"🤖"| ${nodeEnd}`
+                ),
+              },
+              method: "POST",
+            });
+
             pre.value = pre.value.replace(
-              matchingGroup.at(0),
-              `${nodeId}("${userInput}")`
-            ); // Replace the matching group with the user input
-          }
-        });
-        node.classList.add("cursor-pointer");
-      }
+              edgeDefinitionRegExp,
+              `${nodeStart} -->|"${newEdge}"| ${nodeEnd}`
+            );
+          });
+
+          edgeLabel.classList.add("cursor-pointer");
+        }
+      })();
     }
   },
   {
