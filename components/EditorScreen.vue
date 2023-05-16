@@ -17,10 +17,8 @@ const colorMode = useColorMode();
 //   };
 //   return options;
 // });
-const pre = ref(`
-flowchart TD
-  tutorial("Right-click the next node to define a problem.\nLeft-click to generate the next node.\nRight-click the edge to edit.\nLeft-click the edge to generate a question.") --> start("I want to book a hotel")
-`);
+const pre = ref(`flowchart TD
+\tgoal("(Enter your problem here)")`);
 
 const {
   data: svg,
@@ -52,6 +50,7 @@ watch(
 
       (() => {
         if (!nodes) return;
+        const length = nodes.children.length;
         for (const node of nodes.children) {
           const nodeId = node.id.match(/^flowchart-(\w+)-\d+$/)?.at(1);
 
@@ -61,14 +60,12 @@ watch(
           node.addEventListener("click", async () => {
             const { edge: label } = await $fetch("/api/new-edge", {
               body: {
-                code: pre.value,
+                code: pre.value + `\n\t${nodeId} -->|"🤖"| node${length}("✏️")`,
               },
               method: "POST",
             });
 
-            const newEdge = `\n\t${nodeId} -->|"${label}"| node${Math.floor(
-              Math.random() * 100000
-            )}("✏️")`;
+            const newEdge = `\n\t${nodeId} -->|"${label}"| node${length}("✏️")`;
 
             pre.value += newEdge;
           });
@@ -127,7 +124,7 @@ watch(
                 // replace $2 with 🤖
                 code: pre.value.replace(
                   edgeDefinitionRegExp,
-                  `${nodeStart} -->|"🤖"| ${nodeEnd}`
+                  `${nodeStart} -->|"🤖"| ${nodeEnd.replace(/"[^*]"/, "✏️")}`
                 ),
               },
               method: "POST",
@@ -190,7 +187,7 @@ watch(
     <div
       :class="
         cn([
-          'grow p-4',
+          'max-h-full grow p-4',
           'border-zinc-300 bg-zinc-100 text-zinc-900',
           'dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200',
         ])
