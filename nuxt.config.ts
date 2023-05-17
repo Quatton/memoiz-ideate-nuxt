@@ -27,5 +27,6 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     ai21ApiKey: "",
+    openaiApiKey: "",
   },
 });

@@ -17,8 +17,10 @@ const colorMode = useColorMode();
 //   };
 //   return options;
 // });
-const pre = ref(`flowchart TD
-\tgoal("(Enter your problem here)")`);
+
+const originalValue = `flowchart TD
+\tgoal("(Enter your problem here)")`;
+const code = ref(originalValue);
 
 const {
   data: svg,
@@ -32,13 +34,13 @@ const {
         theme: colorMode.value === "dark" ? "dark" : "default",
         securityLevel: "antiscript",
       },
-      pre.value.trim(),
+      code.value.trim(),
       "mermaid"
     );
     return svg;
   },
   {
-    watch: [pre, colorMode],
+    watch: [code, colorMode],
   }
 );
 
@@ -55,19 +57,20 @@ watch(
           const nodeId = node.id.match(/^flowchart-(\w+)-\d+$/)?.at(1);
 
           const nodeLabel = new RegExp(`${nodeId}\\(".+"\\)|${nodeId}`);
-          const matchingGroup = pre.value.match(nodeLabel); // Find the matching group
+          const matchingGroup = code.value.match(nodeLabel); // Find the matching group
           if (!nodeId) continue;
-          node.addEventListener("click", async () => {
-            const { edge: label } = await $fetch("/api/new-edge", {
-              body: {
-                code: pre.value + `\n\t${nodeId} -->|"🤖"| node${length}("✏️")`,
-              },
-              method: "POST",
-            });
+          node.addEventListener("click", () => {
+            // const { edge: label } = await $fetch("/api/new-edge", {
+            //   body: {
+            //     code:
+            //       code.value + `\n\t${nodeId} -->|"🤖"| node${length}("✏️")`,
+            //   },
+            //   method: "POST",
+            // });
 
-            const newEdge = `\n\t${nodeId} -->|"${label}"| node${length}("✏️")`;
+            // const newEdge = `\n\t${nodeId} -->|"${label}"| node${length}("✏️")`;
 
-            pre.value += newEdge;
+            code.value += `\n\t${nodeId} -->|"🤖"| node${length}("✏️")`;
           });
           node.addEventListener("contextmenu", (event) => {
             event.preventDefault(); // Prevent the default right-click action
@@ -80,7 +83,7 @@ watch(
             if (userInput) {
               const sanitizedUserInput = userInput.replace(/"/g, "'");
 
-              pre.value = pre.value.replace(
+              code.value = code.value.replace(
                 nodeLabel,
                 `${nodeId}("${sanitizedUserInput}")`
               ); // Replace the matching group with the user input
@@ -111,7 +114,7 @@ watch(
             `((?:${edgeStart})(?:\\("[^"]*"\\))?)\\s-->(?:\\|"([^"]+)"\\|)?\\s((?:${edgeEnd})(?:\\("[^"]*"\\))?)`
           );
 
-          const edgeDefinition = pre.value.match(edgeDefinitionRegExp);
+          const edgeDefinition = code.value.match(edgeDefinitionRegExp);
 
           if (!edgeDefinition) continue;
           const [_, nodeStart, edge, nodeEnd] = edgeDefinition;
@@ -122,7 +125,7 @@ watch(
             const { edge: newEdge } = await $fetch("/api/new-edge", {
               body: {
                 // replace $2 with 🤖
-                code: pre.value.replace(
+                code: code.value.replace(
                   edgeDefinitionRegExp,
                   `${nodeStart} -->|"🤖"| ${nodeEnd.replace(/"[^*]"/, "✏️")}`
                 ),
@@ -130,7 +133,7 @@ watch(
               method: "POST",
             });
 
-            pre.value = pre.value.replace(
+            code.value = code.value.replace(
               edgeDefinitionRegExp,
               `${nodeStart} -->|"${newEdge}"| ${nodeEnd}`
             );
@@ -146,9 +149,20 @@ watch(
   }
 );
 
-// onMounted(() => {
-//   initEditor(monaco);
-// });
+const handleKeyboardEvent = (ev: KeyboardEvent) => {
+  ev.preventDefault();
+  if (ev.ctrlKey && ev.key === "r") {
+    code.value = originalValue;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", handleKeyboardEvent, false);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleKeyboardEvent, false);
+});
 </script>
 
 <template>
