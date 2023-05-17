@@ -50,6 +50,7 @@
   "dependencies": {
     "@pinia/nuxt": "^0.4.10",
     "clsx": "^1.2.1",
+    "langchain": "^0.0.75",
     "mermaid": "^10.1.0",
     "openai": "^3.2.1",
     "pinia": "^2.0.36",

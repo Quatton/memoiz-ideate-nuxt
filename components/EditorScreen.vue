@@ -81,11 +81,12 @@ watch(
             ); // Prompt the user for input
 
             if (userInput) {
-              const sanitizedUserInput = userInput.replace(/"/g, "'");
+              const sanitizedUserInput = userInput.replace(/"/g, "");
+              const wrappedUserInput = autoTextWrap(sanitizedUserInput, 30);
 
               code.value = code.value.replace(
                 nodeLabel,
-                `${nodeId}("${sanitizedUserInput}")`
+                `${nodeId}("${wrappedUserInput}")`
               ); // Replace the matching group with the user input
             }
           });
@@ -133,9 +134,12 @@ watch(
               method: "POST",
             });
 
+            const sanitizedNewEdge = newEdge.replace(/"/g, "");
+            const wrappedNewEdge = autoTextWrap(sanitizedNewEdge, 30);
+
             code.value = code.value.replace(
               edgeDefinitionRegExp,
-              `${nodeStart} -->|"${newEdge}"| ${nodeEnd}`
+              `${nodeStart} -->|"${wrappedNewEdge}"| ${nodeEnd}`
             );
           });
 
