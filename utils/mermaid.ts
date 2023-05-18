@@ -13,8 +13,13 @@ export const render = async (
   return await mermaid.render(id, code);
 };
 
-export const parse = async (code: string): Promise<unknown> => {
-  return await mermaid.parse(code);
+export const parse = async (code: string): Promise<null | Error> => {
+  try {
+    await mermaid.parse(code);
+  } catch (e) {
+    return e as Error;
+  }
+  return null;
 };
 
 /**

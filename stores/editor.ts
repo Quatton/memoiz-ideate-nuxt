@@ -1,5 +1,5 @@
 import { type MermaidConfig } from "mermaid";
-import { defineStore } from "pinia";
+import { acceptHMRUpdate, defineStore } from "pinia";
 
 export const useEditorStore = defineStore("editor", () => {
   const code = ref("");
@@ -16,26 +16,29 @@ export const useEditorStore = defineStore("editor", () => {
     } satisfies MermaidConfig;
   });
 
-  watch(code, () => {
-    console.log(code);
-  });
-
   // Let's implement useAsyncData on our own
-  const error = ref<Error | null>(null)
-  const pending = ref<boolean>(false)
+  const error = ref<Error | null>(null);
+  const pending = ref<boolean>(false);
 
-  watch(code, () => {
-    pending.value = true
-    render(config.value, code.value.trim(), "mermaid")
-    .then(({ svg }) => {
-      error.value = null
-      pending.value = false
-      staleSvg.value = svg
-    }).catch(error => {
-      error.value = error
-      pending.value = false
-    })
-  })
+  watch(code, async () => {
+    pending.value = true;
+    const e = await parse(code.value.trim());
+    if (e) {
+      console.log(e);
+      error.value = e;
+      pending.value = false;
+      return;
+    }
+    const { svg } = await render(config.value, code.value.trim(), "mermaid");
+    error.value = null;
+    pending.value = false;
+    staleSvg.value = svg;
+    console.log(staleSvg.value);
+  });
 
   return { code, staleSvg, error, pending };
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useEditorStore, import.meta.hot));
+}
