@@ -21,7 +21,7 @@ const options = computed(() => {
 
 const originalValue = `flowchart TD\n\tgoal("Enter your problem here")`;
 
-const store = useEditorStore(undefined);
+const store = useEditorStore();
 const { code, error } = storeToRefs(store);
 
 onMounted(() => {
@@ -34,13 +34,13 @@ onMounted(() => {
   <div
     :class="
       cn([
-        'flex grow flex-col overflow-hidden border-r font-mono sm:min-w-[12rem]',
+        'flex grow flex-col overflow-hidden font-mono',
         'border-zinc-300',
         'dark:border-zinc-600 ',
       ])
     "
   >
-    <MonacoEditor
+    <LazyMonacoEditor
       v-model="code"
       class="h-[99.9%]"
       :options="options"

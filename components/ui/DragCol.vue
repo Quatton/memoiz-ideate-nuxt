@@ -31,6 +31,14 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  minLeft: {
+    type: Number,
+    default: 20,
+  },
+  maxLeft: {
+    type: Number,
+    default: 80,
+  },
   leftPercent: {
     type: Number,
     default: 50,
@@ -115,8 +123,9 @@ function dragCol(e: MouseEvent) {
   isDragging.value = true;
   emits("isDragging", isDragging.value);
   document.onmousemove = (ev) => {
-    if (time.value && Date.now() - time.value < 40) return;
-    time.value = Date.now();
+    // For what? I don't know
+    // if (time.value && Date.now() - time.value < 40) return;
+    // time.value = Date.now();
     ev.preventDefault();
     ev.stopPropagation();
     newPos = ev.clientX;
@@ -124,10 +133,10 @@ function dragCol(e: MouseEvent) {
       (((oldPos - newPos) / containerWidth) * 100).toFixed(3)
     );
     newPosPercent = oldPosPercent - movingDistancePercent;
-    if (newPosPercent <= 0) {
-      left.value = 0;
-    } else if (newPosPercent >= 100) {
-      left.value = 100;
+    if (newPosPercent <= props.minLeft) {
+      left.value = props.minLeft;
+    } else if (newPosPercent >= props.maxLeft) {
+      left.value = props.maxLeft;
     } else {
       left.value = newPosPercent;
     }

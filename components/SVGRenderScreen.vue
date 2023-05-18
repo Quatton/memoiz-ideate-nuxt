@@ -5,7 +5,7 @@ import { useEditorStore } from "@/stores/editor";
 const originalValue = `flowchart TD\n\tgoal("Enter your problem here")`;
 
 const store = useEditorStore();
-const { code, error, pending, staleSvg } = storeToRefs(store);
+const { code, staleSvg } = storeToRefs(store);
 
 watch(
   [staleSvg],
