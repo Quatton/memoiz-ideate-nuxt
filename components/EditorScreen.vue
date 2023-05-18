@@ -1,25 +1,24 @@
 <script lang="ts" setup>
-// import * as monaco from "monaco-editor";
+import * as monaco from "monaco-editor";
 // import mermaid from "mermaid";
 
 const colorMode = useColorMode();
 
-// const options = computed(() => {
-//   const options: monaco.editor.IStandaloneEditorConstructionOptions = {
-//     theme: colorMode.value === "dark" ? "mermaid-dark" : "mermaid",
-//     minimap: {
-//       enabled: false,
-//     },
-//     overviewRulerLanes: 0,
-//     autoClosingQuotes: "beforeWhitespace",
-//     autoClosingBrackets: "beforeWhitespace",
-//     automaticLayout: true,
-//   };
-//   return options;
-// });
+const options = computed(() => {
+  const options: monaco.editor.IStandaloneEditorConstructionOptions = {
+    theme: colorMode.value === "dark" ? "mermaid-dark" : "mermaid",
+    minimap: {
+      enabled: false,
+    },
+    overviewRulerLanes: 0,
+    autoClosingQuotes: "beforeWhitespace",
+    autoClosingBrackets: "beforeWhitespace",
+    automaticLayout: true,
+  };
+  return options;
+});
 
-const originalValue = `flowchart TD
-\tgoal("(Enter your problem here)")`;
+const originalValue = `flowchart TD\n\tgoal("Enter your problem here")`;
 const code = ref(originalValue);
 
 const {
@@ -56,7 +55,7 @@ watch(
         for (const node of nodes.children) {
           const nodeId = node.id.match(/^flowchart-(\w+)-\d+$/)?.at(1);
 
-          const nodeLabel = new RegExp(`${nodeId}\\(".+"\\)|${nodeId}`);
+          const nodeLabel = new RegExp(`${nodeId}\\("(.+)"\\)|${nodeId}`);
           const matchingGroup = code.value.match(nodeLabel); // Find the matching group
           if (!nodeId) continue;
           node.addEventListener("click", () => {
@@ -77,7 +76,7 @@ watch(
             if (!matchingGroup) return;
             const userInput = window.prompt(
               "Enter new value:",
-              matchingGroup.at(1) || ""
+              matchingGroup.at(1)?.replace(/\\n/g, " ") || ""
             ); // Prompt the user for input
 
             if (userInput) {
@@ -130,6 +129,8 @@ watch(
                   edgeDefinitionRegExp,
                   `${nodeStart} -->|"🤖"| ${nodeEnd.replace(/"[^*]"/, "✏️")}`
                 ),
+                currentNodeId: edgeStart,
+                nextNodeId: edgeEnd,
               },
               method: "POST",
             });
@@ -141,6 +142,24 @@ watch(
               edgeDefinitionRegExp,
               `${nodeStart} -->|"${wrappedNewEdge}"| ${nodeEnd}`
             );
+          });
+
+          edgeLabel.addEventListener("contextmenu", (event) => {
+            event.preventDefault(); // Prevent the default right-click action
+            const userInput = window.prompt(
+              "Enter new value:",
+              edge.replace(/"/g, "").replace(/\\n/, " ")
+            ); // Prompt the user for input
+
+            if (userInput) {
+              const sanitizedUserInput = userInput.replace(/"/g, "");
+              const wrappedUserInput = autoTextWrap(sanitizedUserInput, 30);
+
+              code.value = code.value.replace(
+                edgeDefinitionRegExp,
+                `${nodeStart} -->|"${wrappedUserInput}"| ${nodeEnd}`
+              ); // Replace the matching group with the user input
+            }
           });
 
           edgeLabel.classList.add("cursor-pointer");
@@ -162,6 +181,7 @@ const handleKeyboardEvent = (ev: KeyboardEvent) => {
 
 onMounted(() => {
   window.addEventListener("keydown", handleKeyboardEvent, false);
+  initEditor(monaco);
 });
 
 onUnmounted(() => {
@@ -171,7 +191,7 @@ onUnmounted(() => {
 
 <template>
   <div class="flex h-full grow">
-    <!-- <div
+    <div
       :class="
         cn([
           'flex flex-col overflow-hidden border-r font-mono',
@@ -182,7 +202,7 @@ onUnmounted(() => {
     >
       <div class="grow resize-x sm:min-w-[12rem]">
         <LazyMonacoEditor
-          v-model="pre"
+          v-model="code"
           class="h-[99.9%]"
           :options="options"
           lang="mermaid"
@@ -200,7 +220,7 @@ onUnmounted(() => {
       >
         idk i love making multiple windows
       </div>
-    </div> -->
+    </div>
 
     <div
       :class="

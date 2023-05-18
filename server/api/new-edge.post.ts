@@ -1,4 +1,6 @@
 import { Configuration, OpenAIApi } from "openai";
+import { z } from "zod";
+import { preprocess } from "../utils/preprocessor";
 
 const prompt = (code: string) => `Task:
 Replace the 🤖 emoji with a thought-provoking question that is related to the node connecting to it.
@@ -101,70 +103,70 @@ ${code}
 
 JSON:`;
 
-const prompt3 = `###Task###
+const prompt3 = `### Task ###
 Replace the 🤖 emoji in the flowchart with a thought-provoking question that is related to the node connecting to it.
 
-Allowed questions:
+VALID questions:
 1. This or That
 2. Suggestion (Have you ever tried XYZ? What do you think about ABC?)
 3. Use "Phrase + ..." if you cannot ask a question (which is..., but..., then..., in other words,...)
 4. Ask for confirmation if the user is making a risky decision or stated information that is either factually wrong, immoral, illegal or harmful. (Are you sure about that? Have you thought about the consequence of that?)
 5. Ask for clarification if the user is making a vague statement. (What do you mean by that? Can you elaborate on that?)
 
-Not allowed questions:
-1. Yes/No questions
-2. Questions that are not related to the node connecting to it
-3. Questions that are already asked before
-4. Questions that are related to the node in another branch
+Your example should be in this format:
 
-Trace the flowchart ONCE to 
-`;
+Candidates:
+1. Question Candidate 1 (VALID/INVALID because...)
+2. Question Candidate 2 (VALID/INVALID because...)
+3. Question Candidate 3 (VALID/INVALID because...)
+4. Question Candidate 4 (VALID/INVALID because...)
+5. Question Candidate 5 (VALID/INVALID because...)
 
-const exampleCode = `flowchart TD
-goal("I lost my wallet. There are many places it could be.")
-goal -->|"Did you search where you normally put it?"| node1("I usually have a basket for small objects like watches, wallet, and my phone charger")
-goal -->|"Have you checked your house, car, and office?"| node2("Yes I did!")
-goal -->|"Where did you last remember having your wallet?"| node3("It was in my pocket")
-node2 -->|"Did you retrace your steps?"| node4("No, I did not...")
-node4 -->|"Did you check other places where you might have left it?"| node5("If it's not here, it has to be at my school")
-node1 -->|"Did you see someone take your wallet?"| node6("No I did not!")
-node6 -->|"What was the last thing you did with your wallet?"| node7("I paid my lunch at the cafeteria")
-node5 -->|"🤖"| node8("✏️")
-node5 -->|"Did you ask your friend if they have seen it?"| node9("Yes I did!")
-node5 -->|"Did you report to the police?"| node10("I think it's too early. What if I just left it in my locker at school?")`;
+Question: pick the best question`;
 
-const exampleAnswer = `[START]
-<pattern>current_node -->|"label"| next_node</pattern>
-<find-exact>node5 -->|"🤖"| node8("✏️")</find-exact>
-<identify>current_node = node5, current_node_text = "If it's not here, it has to be at my school", next_node = node8, next_node_text = "✏️"</identify>
-<trace start="node5" stop-on-goal="true" reverse=true trace-count={1}>
-node5 -->|"🤖"| node8("✏️")
-node4 -->|"Did you check other places where you might have left it?"| node5("If it's not here, it has to be at my school")
-node2 -->|"Did you retrace your steps?"| node4("No, I did not...")
-goal -->|"Have you checked your house, car, and office?"| node2("Yes I did!")
-</trace>
-<existing-ideas from-current-node="node5" strictness="refer-to-flowchart-only" fallback-if-none="(none)">
-node5 -->|"Did you ask your friend if they have seen it?"| node9("Yes I did!")
-node5 -->|"Did you report to the police?"| node10("I think it's too early. What if I just left it in my locker at school?")
-</existing-ideas>
-<candidates from-current-node="node5" label="If it's not here, it has to be at my school">
-<candidate>"Which class did you lose it in?"</candidate>
-<candidate>Did you check the lost and found?"</candidate>
-<candidate>"Did you ask your friend if they have it?" (is already mentioned in existing_ideas)</candidate>
-<candidate>"Did you check the library?"</candidate>
-<candidate>"What was the last thing you did with your wallet?" (is already mentioned in node6 --> node7 which is in another branch of the flowchart)</candidate>
-</candidates>
-<criteria>
-it is related to the node connecting to it.
-it is not already mentioned in existing_ideas.
-it is not already mentioned in another branch of the flowchart.
-it is a question that is most likely to lead to a solution.
-</criteria>
-<best-question count={1}>Did you check the lost and found?</best-question>
-[END]`;
+const exampleCode = `You will be interacting with an example user for training. You will forget about this example in the next interaction.
+
+flowchart TD
+    goal("I lost my wallet. There are many places it could be.")
+    goal -->|"Did you search where you normally put it?"| node1("I usually have a basket for small objects like watches, wallet, and my phone charger")
+    goal -->|"Have you checked your house, car, and office?"| node2("Yes I did!")
+    goal -->|"Where did you last remember having your wallet?"| node3("It was in my pocket")
+    node2 -->|"Did you retrace your steps?"| node4("No, I did not...")
+    node4 -->|"Did you check other places where you might have left it?"| node5("If it's not here, it has to be at my school")
+    node1 -->|"Did you see someone take your wallet?"| node6("No I did not!")
+    node6 -->|"What was the last thing you did with your wallet?"| node7("I paid my lunch at the cafeteria")
+    node5 -->|"🤖"| node8("✏️")
+    node5 -->|"Did you ask your friend if they have seen it?"| node9("Yes I did!")
+    node5 -->|"Did you report to the police?"| node10("I think it's too early. What if I just left it in my locker at school?")`;
+
+const exampleAnswer = `
+Candidates:
+1. Did you report to the authorities? (INVALID because it is similar to an existing idea: "Did you report to the police?")
+2. Did you check the lost and found? (VALID)
+3. Did your brother have a wallet? (INVALID because this does not lead to the solution)
+4. Do you think someone might have taken your wallet? (INVALID because it is similar to another chain of thoughts: node1 -->|"Did you see someone take your wallet?"| node6("No I did not!"))
+5. What did you buy for your lunch (INVALID because this is not related to the current chain of thoughts)
+Comment (for Example User only): I accidentally generated too many invalid candidates. I will NEVER generate invalid candidates for the Real User. I will forget about this wallet example in the next interaction. If the next interaction is about someone losing a wallet, I will NEVER refer to the flowchart above.
+
+Question: Did you check the lost and found?`;
+
+const inputSchema = z.object({
+  code: z.string(),
+  currentNodeId: z.string(),
+  nextNodeId: z.string(),
+});
 
 export default defineEventHandler(async (event) => {
-  const { code } = await readBody(event);
+  const input = await readBody(event);
+
+  const parsedInput = inputSchema.safeParse(input);
+
+  if (!parsedInput.success) {
+    return { edge: "Try again" };
+  }
+
+  const { code, currentNodeId, nextNodeId } = parsedInput.data;
+
   const runtimeConfig = useRuntimeConfig();
 
   const configuration = new Configuration({
@@ -173,44 +175,70 @@ export default defineEventHandler(async (event) => {
 
   const openAi = new OpenAIApi(configuration);
 
-  console.log(code);
+  const examplePreprocessedCode = preprocess(
+    exampleCode.replace(/\\n/g, " "),
+    "node5",
+    "node8"
+  );
 
-  const res = await openAi.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: prompt3 },
-      { role: "user", content: exampleCode },
-      { role: "assistant", content: exampleAnswer },
-      { role: "user", content: code.replace(/\\n/g, "") },
-    ],
-    max_tokens: 800,
-    frequency_penalty: 0.5,
-    presence_penalty: 0,
-    top_p: 0.7,
-    user: "flowchart",
-    stop: ["[END]"],
-  });
+  const preprocessedCode = preprocess(
+    code.replace(/\\n/g, " "),
+    currentNodeId,
+    nextNodeId
+  );
+
+  console.log(code);
+  console.log(preprocessedCode);
+
+  const res = await openAi
+    .createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: prompt3 },
+        {
+          role: "user",
+          content: exampleCode,
+        },
+        { role: "system", content: examplePreprocessedCode },
+        { role: "assistant", content: exampleAnswer.replace(/\\n/g, " ") },
+        { role: "user", content: code.replace(/\\n/g, " ") },
+        { role: "system", content: preprocessedCode },
+      ],
+      max_tokens: 300,
+      frequency_penalty: 0.5,
+      presence_penalty: 0,
+      top_p: 0.6,
+      user: "flowchart",
+    })
+    .catch((e) => {
+      return null;
+    });
+
+  if (res === null || res.status !== 200) {
+    console.log(res?.statusText);
+    return { edge: "Try again" };
+  }
+
+  console.log(
+    "TOKENS:",
+    res.data.usage?.prompt_tokens,
+    ",",
+    res.data.usage?.completion_tokens
+  );
 
   const completion = res.data.choices[0].message?.content;
 
   console.log(completion);
 
-  if (res.status !== 200 || !completion) {
-    return { edge: "Try again" };
+  const question = completion?.match(/Question:\s(.*)/)?.[1];
+
+  if (!question) {
+    return { edge: "Why?" };
   }
 
-  const finalAnswer = completion.match(
-    /<best-question count=\{1\}>(.*)<\/best-question>/
-  )?.[1];
-
-  const candidates = ["Why?", "How?", "Please elaborate"];
-
-  if (!finalAnswer) {
-    return { edge: candidates[Math.floor(Math.random() * candidates.length)] };
-  }
-  console.log(finalAnswer);
-
-  return { edge: finalAnswer };
+  return {
+    edge: "✨" + question,
+  };
 });
 
 // const res = await fetch(

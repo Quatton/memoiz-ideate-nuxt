@@ -37,7 +37,7 @@ export const autoTextWrap = (text: string, maxCharacter: number): string => {
   let currentLine = "";
   for (const word of words) {
     if (currentLine.length + word.length > maxCharacter) {
-      lines.push(currentLine);
+      lines.push(currentLine.trim());
       currentLine = "";
     }
     currentLine += word + " ";
