@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     "@nuxtjs/google-fonts",
     "nuxt-icon",
     "nuxt-monaco-editor",
+    "@pinia/nuxt",
   ],
 
   colorMode: {

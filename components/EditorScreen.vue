@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import * as monaco from "monaco-editor";
+import { storeToRefs } from "pinia";
+import { useEditorStore } from "@/stores/editor";
 // import mermaid from "mermaid";
 
 const colorMode = useColorMode();
@@ -19,34 +21,14 @@ const options = computed(() => {
 });
 
 const originalValue = `flowchart TD\n\tgoal("Enter your problem here")`;
-const code = ref(originalValue);
 
-const {
-  data: svg,
-  error,
-  pending,
-} = await useAsyncData(
-  "mermaid",
-  async () => {
-    const { svg } = await render(
-      {
-        theme: colorMode.value === "dark" ? "dark" : "default",
-        securityLevel: "antiscript",
-      },
-      code.value.trim(),
-      "mermaid"
-    );
-    return svg;
-  },
-  {
-    watch: [code, colorMode],
-  }
-);
+const store = useEditorStore();
+const { code, error, pending, staleSvg } = storeToRefs(store);
 
 watch(
-  [svg, error, pending],
+  [staleSvg],
   () => {
-    if (svg.value && !error.value && !pending.value) {
+    if (staleSvg.value) {
       const nodes = document.querySelector("g.nodes");
 
       (() => {
@@ -173,14 +155,15 @@ watch(
 );
 
 const handleKeyboardEvent = (ev: KeyboardEvent) => {
-  ev.preventDefault();
   if (ev.ctrlKey && ev.key === "r") {
+    ev.preventDefault();
     code.value = originalValue;
   }
 };
 
 onMounted(() => {
   window.addEventListener("keydown", handleKeyboardEvent, false);
+  code.value = originalValue;
   initEditor(monaco);
 });
 
@@ -201,7 +184,7 @@ onUnmounted(() => {
       "
     >
       <div class="grow resize-x sm:min-w-[12rem]">
-        <LazyMonacoEditor
+        <MonacoEditor
           v-model="code"
           class="h-[99.9%]"
           :options="options"
@@ -218,7 +201,7 @@ onUnmounted(() => {
           ])
         "
       >
-        idk i love making multiple windows
+        {{ error }}
       </div>
     </div>
 
@@ -230,7 +213,7 @@ onUnmounted(() => {
           'dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200',
         ])
       "
-      v-html="pending ? 'Loading...' : error ? error.message : svg"
+      v-html="staleSvg"
     />
   </div>
 </template>
