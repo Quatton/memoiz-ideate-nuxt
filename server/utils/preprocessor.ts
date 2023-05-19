@@ -15,7 +15,16 @@ ${traceChain(code, currentNodeId)}
 </CurrentChainOfThoughts>
 <ExistingIdeas>${getExistingIdeas(code, currentNodeId)
     .map((idea) => `"${idea}"`)
-    .join(", ")}</ExistingIdeas>`;
+    .join(", ")}</ExistingIdeas>
+<Criteria> The generated questions must be
+1. Thought-provoking and can lead to a solution of "${getNodeLabel(
+    code,
+    "goal"
+  )}".
+2. Not mentioned in other branches or not already in existing ideas.
+3. Related to the current chain of thoughts.
+</Criteria>
+    `;
 }
 
 function getNodeLabel(code: string, nodeId: string): string {

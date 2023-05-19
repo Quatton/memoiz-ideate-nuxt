@@ -122,7 +122,7 @@ Candidates:
 4. Question Candidate 4
 5. Question Candidate 5
 
-Question: (pick the best question)`;
+Best Question:`;
 
 const exampleCode = `You will be interacting with an example user for training. You will forget about this example in the next interaction.
 
