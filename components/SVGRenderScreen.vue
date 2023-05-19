@@ -16,7 +16,9 @@ watch(
       (() => {
         if (!nodes) return;
         const length = nodes.children.length;
-        for (const node of nodes.children) {
+        for (let i = 0; i < length; i++) {
+          const node = nodes.children.item(i);
+          if (!node) break;
           const nodeId = node.id.match(/^flowchart-(\w+)-\d+$/)?.at(1);
 
           const nodeLabel = new RegExp(`${nodeId}\\("(.+)"\\)|${nodeId}`);
@@ -35,7 +37,7 @@ watch(
 
             code.value += `\n\t${nodeId} -->|"🤖"| node${length}("✏️")`;
           });
-          node.addEventListener("contextmenu", (event) => {
+          node.addEventListener("contextmenu", (event: Event) => {
             event.preventDefault(); // Prevent the default right-click action
             if (!matchingGroup) return;
             const userInput = window.prompt(
@@ -156,7 +158,7 @@ onUnmounted(() => {
   <div
     :class="
       cn([
-        'max-h-full grow p-4',
+        'max-h-full grow overflow-y-auto p-4',
         'border-zinc-300 bg-zinc-100 text-zinc-900',
         'dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200',
       ])

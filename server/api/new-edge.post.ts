@@ -116,13 +116,13 @@ VALID questions:
 Your example should be in this format:
 
 Candidates:
-1. Question Candidate 1 (VALID/INVALID because...)
-2. Question Candidate 2 (VALID/INVALID because...)
-3. Question Candidate 3 (VALID/INVALID because...)
-4. Question Candidate 4 (VALID/INVALID because...)
-5. Question Candidate 5 (VALID/INVALID because...)
+1. Question Candidate 1
+2. Question Candidate 2
+3. Question Candidate 3
+4. Question Candidate 4
+5. Question Candidate 5
 
-Question: pick the best question`;
+Question: (pick the best question)`;
 
 const exampleCode = `You will be interacting with an example user for training. You will forget about this example in the next interaction.
 
@@ -141,14 +141,13 @@ flowchart TD
 
 const exampleAnswer = `
 Candidates:
-1. Did you report to the authorities? (INVALID because it is similar to an existing idea: "Did you report to the police?")
-2. Did you check the lost and found? (VALID)
-3. Did your brother have a wallet? (INVALID because this does not lead to the solution)
-4. Do you think someone might have taken your wallet? (INVALID because it is similar to another chain of thoughts: node1 -->|"Did you see someone take your wallet?"| node6("No I did not!"))
-5. What did you buy for your lunch (INVALID because this is not related to the current chain of thoughts)
-Comment (for Example User only): I accidentally generated too many invalid candidates. I will NEVER generate invalid candidates for the Real User. I will forget about this wallet example in the next interaction. If the next interaction is about someone losing a wallet, I will NEVER refer to the flowchart above.
+1. Did you report to the authorities?
+2. Did you check the lost and found?
+3. Did your brother have a wallet?
+4. Do you think someone might have taken your wallet?
+5. What did you buy for your lunch?
 
-Question: Did you check the lost and found?`;
+Best Question: Did you check the lost and found?`;
 
 const inputSchema = z.object({
   code: z.string(),
@@ -195,12 +194,12 @@ export default defineEventHandler(async (event) => {
       model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: prompt3 },
-        {
-          role: "user",
-          content: exampleCode,
-        },
-        { role: "system", content: examplePreprocessedCode },
-        { role: "assistant", content: exampleAnswer.replace(/\\n/g, " ") },
+        // {
+        //   role: "user",
+        //   content: exampleCode,
+        // },
+        // { role: "system", content: examplePreprocessedCode },
+        // { role: "assistant", content: exampleAnswer.replace(/\\n/g, " ") },
         { role: "user", content: code.replace(/\\n/g, " ") },
         { role: "system", content: preprocessedCode },
       ],

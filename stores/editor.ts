@@ -20,11 +20,11 @@ export const useEditorStore = defineStore("editor", () => {
   const error = ref<Error | null>(null);
   const pending = ref<boolean>(false);
 
-  watch(code, async () => {
+  watch([code, config], async () => {
+    console.log("config!");
     pending.value = true;
     const e = await parse(code.value.trim());
     if (e) {
-      console.log(e);
       error.value = e;
       pending.value = false;
       return;
@@ -33,7 +33,6 @@ export const useEditorStore = defineStore("editor", () => {
     error.value = null;
     pending.value = false;
     staleSvg.value = svg;
-    console.log(staleSvg.value);
   });
 
   return { code, staleSvg, error, pending };
