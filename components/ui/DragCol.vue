@@ -1,7 +1,7 @@
 <template>
   <div ref="container" :class="cn(['drager_col', props.class])">
     <div class="drager_left" :style="{ width: left + '%' }">
-      <div class="flex flex-col">
+      <div class="flex grow flex-col">
         <slot name="left" />
       </div>
     </div>
@@ -16,7 +16,7 @@
       @mousedown="dragCol"
     />
     <div class="drager_right" :style="{ width: 100 - left + '%' }">
-      <div class="flex flex-col">
+      <div class="flex grow flex-col">
         <slot name="right" />
       </div>
     </div>
