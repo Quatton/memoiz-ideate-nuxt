@@ -35,8 +35,8 @@ onMounted(() => {
     :class="
       cn([
         'flex grow flex-col overflow-hidden font-mono',
-        'border-zinc-300',
-        'dark:border-zinc-600 ',
+        'border-gray-300',
+        'dark:border-gray-600 ',
       ])
     "
   >
@@ -52,8 +52,8 @@ onMounted(() => {
     :class="
       cn([
         'h-48 overflow-auto border-t p-4',
-        'border-zinc-300 bg-zinc-50 text-red-600',
-        'dark:border-zinc-600 dark:bg-zinc-950 dark:text-red-400',
+        'border-gray-300 bg-gray-50 text-red-600',
+        'dark:border-gray-600 dark:bg-gray-950 dark:text-red-400',
       ])
     "
   >

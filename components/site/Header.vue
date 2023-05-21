@@ -5,8 +5,8 @@
     :class="
       cn([
         'border-b',
-        'border-rose-300 bg-rose-200 text-rose-700',
-        'dark:border-rose-700 dark:bg-rose-900 dark:text-rose-300',
+        'border-primary-300 bg-primary-200 text-primary-700',
+        'dark:border-primary-700 dark:bg-primary-900 dark:text-primary-300',
       ])
     "
   >

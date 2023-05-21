@@ -182,8 +182,8 @@ onUnmounted(() => {
     :class="
       cn([
         'max-h-full grow overflow-y-auto p-4',
-        'border-zinc-300 bg-zinc-100 text-zinc-900',
-        'dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200',
+        'border-gray-300 bg-gray-100 text-gray-900',
+        'dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200',
       ])
     "
     v-html="staleSvg"

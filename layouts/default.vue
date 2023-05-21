@@ -27,15 +27,15 @@ const links = [
   <div class="flex h-screen flex-col overflow-hidden">
     <SiteHeader />
     <main
-      class="relative flex grow flex-col overflow-auto dark:bg-zinc-950 dark:text-white"
+      class="relative flex grow flex-col overflow-auto dark:bg-gray-950 dark:text-white"
     >
       <section class="flex grow overflow-hidden">
         <div
           :class="
             cn([
               'h-full w-48 shrink-0 border-r',
-              'border-zinc-300 bg-zinc-100',
-              'dark:border-zinc-700 dark:bg-zinc-900',
+              'border-gray-300 bg-gray-100',
+              'dark:border-gray-700 dark:bg-gray-900',
             ])
           "
         >

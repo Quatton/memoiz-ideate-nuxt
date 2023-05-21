@@ -4,7 +4,7 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    node: true,
+    node: true
   },
   extends: [
     "eslint:recommended",
@@ -13,20 +13,20 @@ module.exports = {
     "plugin:nuxt/recommended",
     "plugin:tailwindcss/recommended",
     "prettier",
-    "plugin:vue/vue3-recommended",
+    "plugin:vue/vue3-recommended"
   ],
   overrides: [],
   parser: "vue-eslint-parser",
   parserOptions: {
     ecmaVersion: "latest",
-    sourceType: "module",
+    sourceType: "module"
   },
   plugins: ["vue", "@typescript-eslint", "vitest", "tailwindcss"],
   settings: {
     tailwindcss: {
       callees: ["cn"],
-      config: "./tailwind.config.cjs",
-    },
+      config: "./tailwind.config.cjs"
+    }
   },
   rules: {
     "vue/multi-word-component-names": "off",
@@ -34,6 +34,6 @@ module.exports = {
     "vue/singleline-html-element-content-newline": "off",
     // "vue/no-multiple-template-root": "off",
     "vue/no-v-html": "off", // This is fine because we're using mermaid
-    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-  },
+    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }]
+  }
 };
