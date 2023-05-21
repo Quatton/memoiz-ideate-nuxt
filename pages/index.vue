@@ -2,22 +2,22 @@
 const links = [
   {
     label: "Home",
-    icon: "home",
+    icon: "i-heroicons-home",
     to: "/",
   },
   {
     label: "Notes",
-    icon: "note",
+    icon: "i-heroicons-document-text",
     to: "/notes",
   },
   {
     label: "Tags",
-    icon: "tag",
+    icon: "i-heroicons-tag",
     to: "/tags",
   },
   {
     label: "Settings",
-    icon: "settings",
+    icon: "i-heroicons-cog",
     to: "/settings",
   },
 ];
@@ -28,7 +28,7 @@ const links = [
     <div
       :class="
         cn([
-          'h-full w-48 border-r',
+          'h-full w-48 shrink-0 border-r',
           'border-zinc-300 bg-zinc-100',
           'dark:border-zinc-700 dark:bg-zinc-900',
         ])

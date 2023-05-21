@@ -1,7 +1,7 @@
 <template>
   <div ref="container" :class="cn(['drager_col', props.class])">
     <div class="drager_left" :style="{ width: left + '%' }">
-      <div class="flex grow flex-col">
+      <div class="flex grow flex-col overflow-hidden">
         <slot name="left" />
       </div>
     </div>
@@ -16,7 +16,7 @@
       @mousedown="dragCol"
     />
     <div class="drager_right" :style="{ width: 100 - left + '%' }">
-      <div class="flex grow flex-col">
+      <div class="flex grow flex-col overflow-hidden">
         <slot name="right" />
       </div>
     </div>
@@ -181,8 +181,14 @@ function dragCol(e: MouseEvent) {
   position: relative;
   z-index: 1;
   cursor: col-resize;
-  background: v-bind("sliderBgColor");
+  background-color: v-bind("sliderBgColor");
+  filter: invert(1);
 }
+
+.dark .slider_col {
+  filter: invert(0);
+}
+
 .drager_col > .slider_col:before {
   transition: background-color 0.2s;
   position: absolute;

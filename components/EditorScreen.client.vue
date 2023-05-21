@@ -51,7 +51,7 @@ onMounted(() => {
   <div
     :class="
       cn([
-        'h-48 border-t p-4',
+        'h-48 overflow-auto border-t p-4',
         'border-zinc-300 bg-zinc-50 text-red-600',
         'dark:border-zinc-600 dark:bg-zinc-950 dark:text-red-400',
       ])
