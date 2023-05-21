@@ -37,6 +37,9 @@ export const parse = async (code: string): Promise<null | Error> => {
  * ```
  */
 export const autoTextWrap = (text: string, maxCharacter: number): string => {
+  // what if we don't?
+  return text;
+
   const words = text.split(" ");
   const lines = [];
   let currentLine = "";

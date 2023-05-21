@@ -25,8 +25,8 @@ const store = useEditorStore();
 const { code, error } = storeToRefs(store);
 
 onMounted(() => {
-  code.value = originalValue;
   initEditor(monaco);
+  code.value = originalValue;
 });
 </script>
 

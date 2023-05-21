@@ -1,6 +1,11 @@
 import { type MermaidConfig } from "mermaid";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
+const defaultMermaidConfig: MermaidConfig = {
+  startOnLoad: false,
+  securityLevel: "antiscript",
+};
+
 export const useEditorStore = defineStore("editor", () => {
   const code = ref("");
   const staleSvg = ref("");
@@ -10,9 +15,8 @@ export const useEditorStore = defineStore("editor", () => {
   const config = computed(() => {
     const theme = colorMode.value === "dark" ? "dark" : "default";
     return {
+      ...defaultMermaidConfig,
       theme,
-      startOnLoad: false,
-      securityLevel: "antiscript",
     } satisfies MermaidConfig;
   });
 
@@ -21,7 +25,6 @@ export const useEditorStore = defineStore("editor", () => {
   const pending = ref<boolean>(false);
 
   watch([code, config], async () => {
-    console.log("config!");
     pending.value = true;
     const e = await parse(code.value.trim());
     if (e) {

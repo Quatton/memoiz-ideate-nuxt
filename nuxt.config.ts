@@ -2,12 +2,11 @@
 export default defineNuxtConfig({
   modules: [
     "@nuxtjs/eslint-module",
-    "@nuxtjs/tailwindcss",
-    "@nuxtjs/color-mode",
     "@nuxtjs/google-fonts",
     "nuxt-icon",
     "nuxt-monaco-editor",
     "@pinia/nuxt",
+    "@nuxthq/ui",
   ],
 
   colorMode: {

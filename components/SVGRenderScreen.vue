@@ -1,11 +1,18 @@
 <script lang="ts" setup>
 import { storeToRefs } from "pinia";
+import { useMouse, useWindowScroll } from "@vueuse/core";
 import { useEditorStore } from "@/stores/editor";
 
 const originalValue = `flowchart TD\n\tgoal("Enter your problem here")`;
 
 const store = useEditorStore();
 const { code, staleSvg } = storeToRefs(store);
+
+const { x, y } = useMouse();
+const { y: windowY } = useWindowScroll();
+
+const isOpen = ref(false);
+const virtualElement = ref({ getBoundingClientRect: () => ({}) });
 
 watch(
   [staleSvg],
@@ -25,6 +32,37 @@ watch(
           const matchingGroup = code.value.match(nodeLabel); // Find the matching group
           if (!nodeId) continue;
           node.addEventListener("click", () => {
+            if (!matchingGroup) return;
+            const userInput = window.prompt(
+              "Enter new value:",
+              matchingGroup.at(1)?.replace(/\\n/g, " ") || ""
+            ); // Prompt the user for input
+            if (userInput) {
+              const sanitizedUserInput = userInput.replace(/"/g, "");
+              const wrappedUserInput = autoTextWrap(sanitizedUserInput, 30);
+              code.value = code.value.replace(
+                nodeLabel,
+                `${nodeId}("${wrappedUserInput}")`
+              ); // Replace the matching group with the user input
+            }
+          });
+          node.addEventListener("contextmenu", (event: Event) => {
+            event.preventDefault(); // Prevent the default right-click action
+
+            const top = unref(y) - unref(windowY);
+            const left = unref(x);
+
+            virtualElement.value = {
+              getBoundingClientRect: () => ({
+                top,
+                left,
+                width: 0,
+                height: 0,
+              }),
+            };
+
+            isOpen.value = true;
+
             // const { edge: label } = await $fetch("/api/new-edge", {
             //   body: {
             //     code:
@@ -35,25 +73,7 @@ watch(
 
             // const newEdge = `\n\t${nodeId} -->|"${label}"| node${length}("✏️")`;
 
-            code.value += `\n\t${nodeId} -->|"🤖"| node${length}("✏️")`;
-          });
-          node.addEventListener("contextmenu", (event: Event) => {
-            event.preventDefault(); // Prevent the default right-click action
-            if (!matchingGroup) return;
-            const userInput = window.prompt(
-              "Enter new value:",
-              matchingGroup.at(1)?.replace(/\\n/g, " ") || ""
-            ); // Prompt the user for input
-
-            if (userInput) {
-              const sanitizedUserInput = userInput.replace(/"/g, "");
-              const wrappedUserInput = autoTextWrap(sanitizedUserInput, 30);
-
-              code.value = code.value.replace(
-                nodeLabel,
-                `${nodeId}("${wrappedUserInput}")`
-              ); // Replace the matching group with the user input
-            }
+            // code.value += `\n\t${nodeId} -->|"🤖"| node${length}("✏️")`;
           });
           node.classList.add("cursor-pointer");
         }
@@ -87,7 +107,25 @@ watch(
 
           if (!nodeStart || !edge || !nodeEnd) continue;
 
-          edgeLabel.addEventListener("click", async () => {
+          edgeLabel.addEventListener("click", () => {
+            const userInput = window.prompt(
+              "Enter new value:",
+              edge.replace(/"/g, "").replace(/\\n/, " ")
+            ); // Prompt the user for input
+
+            if (userInput) {
+              const sanitizedUserInput = userInput.replace(/"/g, "");
+              const wrappedUserInput = autoTextWrap(sanitizedUserInput, 30);
+
+              code.value = code.value.replace(
+                edgeDefinitionRegExp,
+                `${nodeStart} -->|"${wrappedUserInput}"| ${nodeEnd}`
+              ); // Replace the matching group with the user input
+            }
+          });
+
+          edgeLabel.addEventListener("contextmenu", async (event) => {
+            event.preventDefault(); // Prevent the default right-click action
             const { edge: newEdge } = await $fetch("/api/new-edge", {
               body: {
                 // replace $2 with 🤖
@@ -108,24 +146,6 @@ watch(
               edgeDefinitionRegExp,
               `${nodeStart} -->|"${wrappedNewEdge}"| ${nodeEnd}`
             );
-          });
-
-          edgeLabel.addEventListener("contextmenu", (event) => {
-            event.preventDefault(); // Prevent the default right-click action
-            const userInput = window.prompt(
-              "Enter new value:",
-              edge.replace(/"/g, "").replace(/\\n/, " ")
-            ); // Prompt the user for input
-
-            if (userInput) {
-              const sanitizedUserInput = userInput.replace(/"/g, "");
-              const wrappedUserInput = autoTextWrap(sanitizedUserInput, 30);
-
-              code.value = code.value.replace(
-                edgeDefinitionRegExp,
-                `${nodeStart} -->|"${wrappedUserInput}"| ${nodeEnd}`
-              ); // Replace the matching group with the user input
-            }
           });
 
           edgeLabel.classList.add("cursor-pointer");
@@ -155,6 +175,9 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <UContextMenu v-model="isOpen" :virtual-element="virtualElement">
+    <h1>Hey</h1>
+  </UContextMenu>
   <div
     :class="
       cn([
