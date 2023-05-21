@@ -40,7 +40,7 @@ onMounted(() => {
       ])
     "
   >
-    <LazyMonacoEditor
+    <MonacoEditor
       v-model="code"
       class="h-[99.9%]"
       :options="options"
