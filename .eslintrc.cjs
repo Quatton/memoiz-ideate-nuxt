@@ -33,6 +33,7 @@ module.exports = {
     "tailwindcss/no-custom-classname": "off",
     "vue/singleline-html-element-content-newline": "off",
     // "vue/no-multiple-template-root": "off",
+    "vue/no-v-html": "off", // This is fine because we're using mermaid
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
   },
 };
